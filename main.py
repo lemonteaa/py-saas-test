@@ -13,7 +13,7 @@ from domain.user import User, Role
 from flask_security import Security, login_required, \
      SQLAlchemySessionUserDatastore
 
-from flask_security.utils import hash_password
+from flask_security.utils import hash_password, verify_password
 
 app = Flask('main')
 
@@ -33,18 +33,22 @@ security = Security(app, user_datastore)
 
 @app.before_first_request
 def create_user():
-    user_datastore.create_user(email='foo@bar.com', password=hash_password('hello-world123'))
+    #first_user = user_datastore.create_user(email='admin',
+    #           password=hash_password('super#283'))
+    #user_datastore.toggle_active(first_user)
     db.session.commit()
 
 # App routes
-@app.route('/login', methods = ['POST'])
+@app.route('/mylogin', methods = ['POST'])
 def login():
     json_data = request.get_json(force=True)
-    j_username = json_data['username']
+    j_email = json_data['email']
     j_password = json_data['password']
     try:
-        user = User.query.filter_by(username= j_username).first()
-        return jsonify(id = user.id)
+        #user = User.query.filter_by(username= j_username).first()
+        user = user_datastore.get_user(j_email)
+        result = verify_password(j_password, user.password)
+        return jsonify(id = user.id, result = result)
     except Exception as e:
         # e holds description of the error
         error_text = "<p>The error:<br>" + str(e) + "</p>"
