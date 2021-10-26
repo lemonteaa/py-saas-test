@@ -8,17 +8,30 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
-from domain.user import User
+from domain.user import User, Role
+
+from flask_security import Security, login_required, \
+     SQLAlchemySessionUserDatastore
 
 app = Flask('main')
 
 # DB config
-db_name = 'test.db'
+db_name = 'test_security.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['SECRET_KEY'] = 'super-secret'
 
 db = SQLAlchemy(app)
 
+# Setup Flask-Security
+user_datastore = SQLAlchemySessionUserDatastore(db.session,
+                                                User, Role)
+security = Security(app, user_datastore)
+
+@app.before_first_request
+def create_user():
+    user_datastore.create_user(email='foo@bar.com', password='hello-world123')
+    db.session.commit()
 
 # App routes
 @app.route('/login', methods = ['POST'])
