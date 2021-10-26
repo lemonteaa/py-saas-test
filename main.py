@@ -4,29 +4,31 @@
     as this .py file
 """
 
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
-app = Flask(__name__)
+from domain.user import User
 
-# change to name of your database; add path if necessary
-db_name = 'sockmarket.db'
+app = Flask('main')
 
+# DB config
+db_name = 'test.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
-# this variable, db, will be used for all SQLAlchemy commands
 db = SQLAlchemy(app)
 
-# NOTHING BELOW THIS LINE NEEDS TO CHANGE
-# this route will test the database connection and nothing more
-@app.route('/')
-def testdb():
+
+# App routes
+@app.route('/login', methods = ['POST'])
+def login():
+    json_data = request.get_json(force=True)
+    j_username = json_data['username']
+    j_password = json_data['password']
     try:
-        db.session.query(text('1')).from_statement(text('SELECT 1')).all()
-        return '<h1>It works.</h1>'
+        user = User.query.filter_by(username= j_username).first()
+        return jsonify(id = user.id)
     except Exception as e:
         # e holds description of the error
         error_text = "<p>The error:<br>" + str(e) + "</p>"
