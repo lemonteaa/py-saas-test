@@ -5,6 +5,7 @@
 """
 
 from flask import Flask, request, jsonify
+from flask_security.decorators import auth_token_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
 
@@ -48,12 +49,17 @@ def login():
         #user = User.query.filter_by(username= j_username).first()
         user = user_datastore.get_user(j_email)
         result = verify_password(j_password, user.password)
-        return jsonify(id = user.id, result = result)
+        return jsonify(id = user.id, result = result, token = user.get_auth_token())
     except Exception as e:
         # e holds description of the error
         error_text = "<p>The error:<br>" + str(e) + "</p>"
         hed = '<h1>Something is broken.</h1>'
         return hed + error_text
+
+@app.route('/test-auth')
+@auth_token_required
+def test_auth():
+    print(current_user.id)
 
 if __name__ == '__main__':
     app.run(debug=True)
