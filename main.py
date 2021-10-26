@@ -13,6 +13,8 @@ from domain.user import User, Role
 from flask_security import Security, login_required, \
      SQLAlchemySessionUserDatastore
 
+from flask_security.utils import hash_password
+
 app = Flask('main')
 
 # DB config
@@ -20,6 +22,7 @@ db_name = 'test_security.db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_name
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['SECRET_KEY'] = 'super-secret'
+app.config['SECURITY_PASSWORD_SALT'] = 'initialD$619'
 
 db = SQLAlchemy(app)
 
@@ -30,7 +33,7 @@ security = Security(app, user_datastore)
 
 @app.before_first_request
 def create_user():
-    user_datastore.create_user(email='foo@bar.com', password='hello-world123')
+    user_datastore.create_user(email='foo@bar.com', password=hash_password('hello-world123'))
     db.session.commit()
 
 # App routes
