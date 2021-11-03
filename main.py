@@ -16,7 +16,13 @@ from flask_security import Security, login_required, \
 
 from flask_security.utils import hash_password, verify_password
 
+from flask_login import LoginManager
+
 app = Flask('main')
+
+# All flask extension need to be initialized
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 # DB config
 db_name = 'test_security.db'
@@ -60,6 +66,7 @@ def login():
 @auth_token_required
 def test_auth():
     print(current_user.id)
+    return jsonify(foo = ' bar')
 
 if __name__ == '__main__':
     app.run(debug=True)
